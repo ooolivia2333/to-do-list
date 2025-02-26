@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
-
+import Sidebar from './components/Sidebar'
+import TaskInput from './components/TaskInput'
+import TaskList from './components/TaskList'
 interface Task {
   id: number;
   text: string;
@@ -36,32 +38,19 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
-      <div className="max-w-md mx-auto bg-white shadow-lg rounded-lg p-6">
-        <h1 className="text-2xl font-bold mb-4">Todo List</h1>
-        <div className="flex mb-4">
-          <input
-            type="text"
-            value={newTask}
-            onChange={(e) => setNewTask(e.target.value)}
-            placeholder="Add a new task..."
-            className="flex-1 p-2 border rounded-l"
+    <div className="app-container">
+      <Sidebar />
+      <main className="main-content">
+        <div className="task-container">
+          <h1 className="task-title">Todo List</h1>
+          <TaskInput
+            newTask={newTask}
+            setNewTask={setNewTask}
+            addTask={addTask}
           />
-          <button
-            onClick={addTask}
-            className="bg-blue-500 text-white p-2 rounded-r"
-          >
-            Add
-          </button>
+          <TaskList tasks={tasks} />
         </div>
-        <ul>
-          {tasks.map((task) => (
-            <li key={task.id} className="p-2 border-b">
-              {task.text}
-            </li>
-          ))}
-        </ul>
-      </div>
+      </main>
     </div>
   );
 }
