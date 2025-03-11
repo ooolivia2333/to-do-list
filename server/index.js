@@ -7,28 +7,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Get all tasks
-app.get("/api/tasks", (req, res) => {
-    db.all("SELECT * FROM tasks", (err, rows) => {
-        if (err) {
-            res.status(500).json({ error: err.message });
-            return;
-        }
-        res.json(rows);
-    });
-});
-
-// Add a new task
-app.post("/api/tasks", (req, res) => {
-    const {text} = req.body;
-    db.run("INSERT INTO tasks (text) VALUES (?)", [text], function(err) {
-        if (err) {
-            res.status(500).json({ error: err.message });
-            return;
-        }
-        res.json({ message: "Task added successfully", id: this.lastID });
-    });
-});
+// Routes
+app.use("/api/tasks", taskRoutes);
+app.use("/api/tags", tagRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 30000;

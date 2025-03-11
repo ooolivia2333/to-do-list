@@ -2,15 +2,12 @@ import { useState, useEffect } from 'react'
 import Sidebar from './components/Sidebar'
 import TaskInput from './components/TaskInput'
 import TaskList from './components/TaskList'
-interface Task {
-  id: number;
-  text: string;
-  completed: boolean;
-}
-
+import { Task, Tag } from './types'
 function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
   const [newTask, setNewTask] = useState("");
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   useEffect(() => {
     fetch("http://localhost:30000/api/tasks")
@@ -18,19 +15,28 @@ function App() {
       .then((data) => setTasks(data))
       .catch((error) => console.error("Error fetching tasks:", error));
   }, []);
+
+  useEffect(() => {
+    fetch("http://localhost:30000/api/tags")
+      .then((response) => response.json())
+      .then((data) => setTags(data))
+      .catch((error) => console.error("Error fetching tags:", error));
+  }, []);
   
-  const addTask = () => {
-    if (newTask.trim()) {
+  
+  const addTask = (text: string, tags: string[]) => {
+    if (text.trim()) {
       fetch("http://localhost:30000/api/tasks", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ text: newTask }),
+        body: JSON.stringify({ text: text, tags: tags }),
       })
         .then((response) => response.json())
         .then((data) => {
-          setTasks([...tasks, { id: data.id, text: newTask, completed: false }]);
+          setTasks([...tasks, 
+            { id: data.id, text: text, completed: false, tags: tags }]);
           setNewTask("");
         })
         .catch((error) => console.error("Error adding task:", error));
@@ -47,8 +53,11 @@ function App() {
             newTask={newTask}
             setNewTask={setNewTask}
             addTask={addTask}
+            availableTags={tags}
           />
-          <TaskList tasks={tasks} />
+          <TaskList tasks={tasks.filter(task =>
+            selectedTags.length === 0 || selectedTags.some(tag => task.tags.includes(tag))
+          )} />
         </div>
       </main>
     </div>
