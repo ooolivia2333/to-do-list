@@ -17,7 +17,7 @@ function Sidebar({ tags, selectedTags, onTagSelect }: SidebarProps) {
 
     return (
         <aside className="sidebar">
-        <h2 className="sidebar-title">Lists</h2>
+        <h2 className="sidebar-title">Tags</h2>
         <ul className="sidebar-list">
           {tags.map(tag => (
             <li key={tag.id}
