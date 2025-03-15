@@ -1,7 +1,8 @@
 const express = require("express"); // to create a server
 const cors = require("cors"); // to allow cross-origin requests
-const db = require("./database");
 const app = express();
+const taskRoutes = require("./routes/taskRoutes");
+const tagRoutes = require("./routes/tagRoutes");
 
 // Middleware
 app.use(cors());

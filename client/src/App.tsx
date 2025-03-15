@@ -12,7 +12,10 @@ function App() {
   useEffect(() => {
     fetch("http://localhost:30000/api/tasks")
       .then((response) => response.json())
-      .then((data) => setTasks(data))
+      .then((data) => {
+        console.log('Tasks from server:', data); // Add this line
+        setTasks(data);
+      })
       .catch((error) => console.error("Error fetching tasks:", error));
   }, []);
 
@@ -45,7 +48,11 @@ function App() {
 
   return (
     <div className="app-container">
-      <Sidebar />
+      <Sidebar 
+        tags={tags}
+        selectedTags={selectedTags}
+        onTagSelect={setSelectedTags}
+      />
       <main className="main-content">
         <div className="task-container">
           <h1 className="task-title">Todo List</h1>
@@ -53,7 +60,6 @@ function App() {
             newTask={newTask}
             setNewTask={setNewTask}
             addTask={addTask}
-            availableTags={tags}
           />
           <TaskList tasks={tasks.filter(task =>
             selectedTags.length === 0 || selectedTags.some(tag => task.tags.includes(tag))

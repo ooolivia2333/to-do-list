@@ -4,7 +4,6 @@ interface TaskInputProps {
     newTask: string;
     setNewTask: (task: string) => void;
     addTask: (text: string, tags: string[]) => void;
-    availableTags: Tag[];
 }
 
 function TaskInput({ newTask, setNewTask, addTask }: TaskInputProps) {

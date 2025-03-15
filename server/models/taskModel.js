@@ -1,7 +1,7 @@
 const db = require("../database/database");
 
 const TaskModel = {
-    getAllTasks: async () => {
+    getAllTasks: () => {
         return new Promise((resolve, reject) => {
             const query = `
                 SELECT
@@ -18,26 +18,77 @@ const TaskModel = {
             });
         });
     },
-    createTask: async (text, tags) => {
-        return new Promise((resolve, reject) => {
-            db.run(`BEGIN TRANSACTION`)
-            db.run(`INSERT INTO tasks (text) VALUES (?)`, [text], function(err) {
-                if (err) {
-                    db.run(`ROLLBACK`); 
-                    reject(err);
-                    return;
-                }
-                const taskId = this.lastID;
 
-                // Add tags
-                if (tags && tags.length > 0) {
-                    tags.forEach((tag) => {
-                        db.run(`INSERT INTO task_tags (task_id, tag_id) VALUES (?, ?)`, [taskId, tag], (err) => {
-                            if (err) reject(err);
+    createTask: (text, tags) => {
+        return new Promise((resolve, reject) => {
+            db.serialize(() => {
+                db.run("BEGIN TRANSACTION");
+                
+                db.run("INSERT INTO tasks (text) VALUES (?)", [text], function(err) {
+                    if (err) {
+                        db.run("ROLLBACK");
+                        reject(err);
+                        return;
+                    }
+                    
+                    const taskId = this.lastID;
+                    
+                    // If no tags, commit and return
+                    if (!tags || tags.length === 0) {
+                        db.run("COMMIT");
+                        resolve({ id: taskId, text, tags: [] });
+                        return;
+                    }
+
+                    // Process tags
+                    let completed = 0;
+                    let hasError = false;
+
+                    tags.forEach((tagName) => {
+                        // First ensure the tag exists
+                        db.run("INSERT OR IGNORE INTO tags (name) VALUES (?)", [tagName], function(err) {
+                            if (err && !hasError) {
+                                hasError = true;
+                                db.run("ROLLBACK");
+                                reject(err);
+                                return;
+                            }
+
+                            // Get the tag id
+                            db.get("SELECT id FROM tags WHERE name = ?", [tagName], (err, tag) => {
+                                if (err && !hasError) {
+                                    hasError = true;
+                                    db.run("ROLLBACK");
+                                    reject(err);
+                                    return;
+                                }
+
+                                // Link tag to task
+                                db.run(
+                                    "INSERT INTO task_tags (task_id, tag_id) VALUES (?, ?)",
+                                    [taskId, tag.id],
+                                    (err) => {
+                                        if (err && !hasError) {
+                                            hasError = true;
+                                            db.run("ROLLBACK");
+                                            reject(err);
+                                            return;
+                                        }
+
+                                        completed++;
+                                        if (completed === tags.length && !hasError) {
+                                            db.run("COMMIT");
+                                            resolve({ id: taskId, text, tags });
+                                        }
+                                    }
+                                );
+                            });
                         });
                     });
-                }
+                });
             });
         });
     }
-}
+};
+
+module.exports = TaskModel;

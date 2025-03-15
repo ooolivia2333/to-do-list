@@ -111,6 +111,11 @@ body {
 .task-item {
   padding: 0.5em;
   border-bottom: 1px solid #eee;
+  color: #333;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 h1 {
@@ -148,4 +153,21 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+.sidebar-list li.selected {
+  background-color: #3498db;
+  color: white;
+}
+
+.sidebar-list li:hover {
+  background-color: #3498db;
+  color: white;
+}
+
+.sidebar-list li {
+  margin-bottom: 0.5em;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
 }
