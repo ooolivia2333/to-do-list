@@ -171,3 +171,28 @@ button:focus-visible {
   padding: 8px;
   border-radius: 4px;
 }
+
+.task-tags {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.tag {
+  background-color: #e0e0e0;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.9em;
+}
+
+.add-tag-btn {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.add-tag-btn:hover {
+  color: #333;
+}

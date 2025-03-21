@@ -3,47 +3,48 @@ import Sidebar from './components/Sidebar'
 import TaskInput from './components/TaskInput'
 import TaskList from './components/TaskList'
 import { Task, Tag } from './types'
+import taskService from './services/taskService'
+import tagService from './services/tagService'
+
 function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [newTask, setNewTask] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
-  useEffect(() => {
-    fetch("http://localhost:30000/api/tasks")
-      .then((response) => response.json())
-      .then((data) => {
-        console.log('Tasks from server:', data); // Add this line
-        setTasks(data);
-      })
-      .catch((error) => console.error("Error fetching tasks:", error));
-  }, []);
+  const fetchTasks = async () => {
+      try {
+          const data = await taskService.getAllTasks();
+          setTasks(data);
+      } catch (error) {
+          console.error("Error fetching tasks:", error);
+      }
+  };
 
+  const fetchTags = async () => {
+    try {
+      const data = await tagService.getAllTags();
+      setTags(data);
+    } catch (error) {
+      console.error("Error fetching tags:", error);
+    }
+  };
+  
   useEffect(() => {
-    fetch("http://localhost:30000/api/tags")
-      .then((response) => response.json())
-      .then((data) => setTags(data))
-      .catch((error) => console.error("Error fetching tags:", error));
+    fetchTasks();
+    fetchTags();
   }, []);
   
-  
-  const addTask = (text: string, tags: string[]) => {
-    if (text.trim()) {
-      fetch("http://localhost:30000/api/tasks", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ text: text, tags: tags }),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          setTasks([...tasks, 
-            { id: data.id, text: text, completed: false, tags: tags }]);
-          setNewTask("");
-        })
-        .catch((error) => console.error("Error adding task:", error));
-    }
+  const addTask = async (text: string, tags: string[]) => {
+      if (text.trim()) {
+          try {
+              const newTask = await taskService.createTask(text, tags);
+              setTasks([...tasks, newTask]);
+              setNewTask("");
+          } catch (error) {
+              console.error("Error adding task:", error);
+          }
+      }
   };
 
   return (
@@ -63,7 +64,10 @@ function App() {
           />
           <TaskList tasks={tasks.filter(task =>
             selectedTags.length === 0 || selectedTags.some(tag => task.tags.includes(tag))
-          )} />
+          )} onTaskUpdate={() => {
+            fetchTasks();
+            fetchTags();
+          }} />
         </div>
       </main>
     </div>

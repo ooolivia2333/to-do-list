@@ -21,7 +21,17 @@ const TaskController = {
         } catch (error) {
             res.status(500).json({error: error.message});
         }
+    },
+    addTagsToTask: async (req, res) => {
+        try {
+            const taskId = parseInt(req.params.taskId);
+            const {tags} = req.body;
+            const result = await TaskModel.addTagsToTask(taskId, tags);
+            res.json(result);
+        } catch (error) {
+            res.status(500).json({error:error.message});
+        }
     }
-}
+};
 
 module.exports = TaskController;

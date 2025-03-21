@@ -88,6 +88,59 @@ const TaskModel = {
                 });
             });
         });
+    },
+    addTagsToTask: (taskId, tags) => {
+        return new Promise((resolve, reject) => {
+            db.serialize(() => {
+                db.run("BEGIN TRANSACTION");
+
+                let completed = 0;
+                let hasError = false;
+
+                tags.forEach((tagName) => {
+                    // ensure tag exists
+                    db.run("INSERT OR IGNORE INTO tags (name) values (?)",
+                        [tagName], function(err) {
+                            if (err && !hasError) {
+                                hasError = true;
+                                db.run("ROLLBACK");
+                                return reject(err);
+                            }
+                            
+                            // get tag id
+                            db.get("SELECT id FROM tags WHERE name = ?",
+                                [tagName], (err, tag) => {
+                                    if (err && !hasError) {
+                                        hasError = true;
+                                        db.run("ROLLBACK");
+                                        return reject(err);
+                                    }
+
+                                    // link tag to task
+                                    db.run(
+                                        "INSERT OR IGNORE INTO task_tags (task_id, tag_id) VALUES (?, ?)",
+                                        [taskId, tag.id],
+                                        (err) => {
+                                            if (err && !hasError) {
+                                                hasError = true;
+                                                db.run("ROLLBACK");
+                                                return reject(err);
+                                            }
+
+                                            completed++;
+                                            if (completed === tags.length && !hasError) {
+                                                db.run("COMMIT");
+                                                resolve({id: taskId, tags});
+                                            }
+                                        }
+                                    )
+                                }
+                            )
+                        }
+                    )
+                })
+            })
+        })
     }
 };
 
