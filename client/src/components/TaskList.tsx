@@ -22,13 +22,34 @@ function TaskList({ tasks, onTaskUpdate }: TaskListProps) {
         }
     };
     
-    
+    const handleToggleComplete = async (taskId: number, completed: boolean) => {
+        try {
+            await taskService.updateTaskCompletion(taskId.toString(), completed);
+            onTaskUpdate();
+        } catch (error) {
+            console.error("Error toggling complete:", error);
+        }
+    }
+
+    const sortedTasks = [...tasks].sort((a, b) => {
+        if (a.completed === b.completed) return 0;
+        return a.completed ? 1 : -1;
+    });
+
     return (
       <ul className="task-list">
-          {tasks.map((task) => (
-              <li key={task.id} className="task-item">
+          {sortedTasks.map((task) => (
+              <li key={task.id} className={`task-item ${task.completed ? 'completed' : ''}`}>
                   <div className="task-content">
-                      <span>{task.text}</span>
+                      <div className="task-main">
+                          <input
+                              type="checkbox"
+                              checked={task.completed}
+                              onChange={(e) => handleToggleComplete(task.id, e.target.checked)}
+                              className="task-checkbox"
+                          />
+                          <span className="task-text">{task.text}</span>
+                      </div>
                       <div className="task-tags">
                           {task.tags.map(tag => (
                               <span key={tag} className="tag">{tag}</span>
@@ -42,8 +63,16 @@ function TaskList({ tasks, onTaskUpdate }: TaskListProps) {
                                       type="text"
                                       value={newTag}
                                       onChange={(e) => setNewTag(e.target.value)}
+                                      onBlur={() => {
+                                        // Small delay to allow form submission if clicked
+                                        setTimeout(() => {
+                                            setEditingTaskId(null);
+                                            setNewTag("");
+                                        }, 100);
+                                      }}
                                       placeholder="Add tag"
                                       className="tag-input"
+                                      autoFocus
                                   />
                               </form>
                           ) : (

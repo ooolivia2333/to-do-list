@@ -141,6 +141,39 @@ const TaskModel = {
                 })
             })
         })
+    },
+    updateTaskCompletion: (taskId, completed) => {
+        return new Promise((resolve, reject) => {
+            const query = `
+                UPDATE tasks
+                SET completed = ?
+                WHERE id = ?
+            `;
+
+            db.run(query, [completed, taskId], (err) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                const selectQuery = `
+                    SELECT
+                        t.*,
+                        GROUP_CONCAT(tag.name) as tags
+                    FROM tasks t
+                    LEFT JOIN task_tags tt ON t.id = tt.task_id
+                    LEFT JOIN tags tag ON tt.tag_id = tag.id
+                    WHERE t.id = ?
+                `;
+
+                db.get(selectQuery, [taskId], (err, row) => {
+                    if (err) {
+                        reject(err);
+                        return;
+                    }
+                    resolve(row);
+                });
+            });
+        });
     }
 };
 

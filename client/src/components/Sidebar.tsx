@@ -16,6 +16,7 @@ function Sidebar({ tags, selectedTags, onTagSelect }: SidebarProps) {
   };
 
     return (
+      
         <aside className="sidebar">
         <h2 className="sidebar-title">Tags</h2>
         <ul className="sidebar-list">

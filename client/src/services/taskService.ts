@@ -37,6 +37,20 @@ const taskService = {
         
         return response.json();
     },
+
+    updateTaskCompletion: async (taskId: string, completed: boolean) => {
+        const response = await fetch(`http://localhost:30000/api/tasks/${taskId}`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ completed }),
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to update task completion");
+        }
+    },
 };
 
 export default taskService;
