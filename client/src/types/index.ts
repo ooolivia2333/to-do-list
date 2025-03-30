@@ -8,5 +8,7 @@ export interface Task {
     text: string;
     completed: boolean;
     tags: string[];
+    reminderDate?: string;
+    reminderSent?: boolean;
 }
   

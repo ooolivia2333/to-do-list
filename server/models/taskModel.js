@@ -5,7 +5,11 @@ const TaskModel = {
         return new Promise((resolve, reject) => {
             const query = `
                 SELECT
-                    t.*,
+                    t.id,
+                    t.text,
+                    t.completed,
+                    t.reminder_date as reminderDate,
+                    t.reminder_sent as reminderSent,
                     GROUP_CONCAT(tag.name) as tags
                 FROM tasks t
                 LEFT JOIN task_tags tt ON t.id = tt.task_id
@@ -157,7 +161,11 @@ const TaskModel = {
                 }
                 const selectQuery = `
                     SELECT
-                        t.*,
+                        t.id,
+                        t.text,
+                        t.completed,
+                        t.reminder_date as reminderDate,
+                        t.reminder_sent as reminderSent,
                         GROUP_CONCAT(tag.name) as tags
                     FROM tasks t
                     LEFT JOIN task_tags tt ON t.id = tt.task_id
@@ -174,7 +182,47 @@ const TaskModel = {
                 });
             });
         });
-    }
+    },
+
+    setReminder: (taskId, reminderDate) => {
+        return new Promise((resolve, reject) => {
+            const query = `
+                UPDATE tasks
+                SET reminder_date = ?,
+                    reminder_sent = false
+                WHERE id = ?
+            `;
+
+            db.run(query, [reminderDate, taskId], (err) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                
+                const selectQuery = `
+                    SELECT
+                        t.id,
+                        t.text,
+                        t.completed,
+                        t.reminder_date as reminderDate,
+                        t.reminder_sent as reminderSent,
+                        GROUP_CONCAT(tag.name) as tags
+                    FROM tasks t
+                    LEFT JOIN task_tags tt ON t.id = tt.task_id
+                    LEFT JOIN tags tag ON tt.tag_id = tag.id
+                    WHERE t.id = ?
+                `;
+
+                db.get(selectQuery, [taskId], (err, row) => {
+                    if (err) {
+                        reject(err);
+                        return;
+                    }
+                    resolve(row);
+                });
+            });
+        });
+    },
 };
 
 module.exports = TaskModel;

@@ -42,6 +42,8 @@ A simple todo list application built with React (frontend) and Express/SQLite (b
 
 - Add new tasks
 - View list of tasks
+- Add tags for tasks and filter based on tags
+- Add reminder for a task
 - Persistent storage using SQLite database
 - Modern UI with Tailwind CSS
 

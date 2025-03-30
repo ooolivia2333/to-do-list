@@ -7,7 +7,9 @@ db.serialize(() => {
         CREATE TABLE IF NOT EXISTS tasks (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             text TEXT NOT NULL,
-            completed BOOLEAN NOT NULL DEFAULT FALSE
+            completed BOOLEAN NOT NULL DEFAULT FALSE,
+            reminder_date DATETIME,
+            reminder_sent BOOLEAN NOT NULL DEFAULT FALSE
         )
     `);
     

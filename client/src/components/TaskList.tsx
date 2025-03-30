@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Task } from "../types";
 import taskService from "../services/taskService";
-
+import DatePicker from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css";
 
 interface TaskListProps {
     tasks: Task[];
@@ -11,7 +12,22 @@ interface TaskListProps {
 function TaskList({ tasks, onTaskUpdate }: TaskListProps) {
     const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
     const [newTag, setNewTag] = useState("");
+    const [showReminderPicker, setShowReminderPicker] = useState<number | null>(null);
+    const [newReminderDate, setNewReminderDate] = useState<Date | null>(null);
+    const pickerRef = useRef<HTMLDivElement>(null);
 
+    const handleDateTimeChange = (date: Date | null) => {
+        if (!date) return;
+        
+        // If we already have a date selected, preserve the old time
+        if (newReminderDate) {
+            date.setHours(newReminderDate.getHours());
+            date.setMinutes(newReminderDate.getMinutes());
+        }
+        
+        setNewReminderDate(date);
+    };
+    
     const handleAddTag = async (taskId: number) => {
         try {
           await taskService.addTagsToTask(taskId.toString(), [newTag]);
@@ -29,7 +45,27 @@ function TaskList({ tasks, onTaskUpdate }: TaskListProps) {
         } catch (error) {
             console.error("Error toggling complete:", error);
         }
-    }
+    };
+
+    const handleSetReminder = async (taskId: number, date: Date | null) => {
+        try {
+            await taskService.setReminder(taskId.toString(), date);
+            setShowReminderPicker(null);
+            onTaskUpdate();
+        } catch (error) {
+            console.error("Error setting reminder:", error);
+        }
+    };
+
+    const formatReminderDate = (date: Date) => {
+        return new Date(date).toLocaleString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12: true,
+        });
+    };
 
     const sortedTasks = [...tasks].sort((a, b) => {
         if (a.completed === b.completed) return 0;
@@ -49,6 +85,11 @@ function TaskList({ tasks, onTaskUpdate }: TaskListProps) {
                               className="task-checkbox"
                           />
                           <span className="task-text">{task.text}</span>
+                          {task.reminderDate && (
+                            <span className="reminder-badge" title="Reminder set">
+                                {formatReminderDate(new Date(task.reminderDate))}
+                            </span>
+                          )}
                       </div>
                       <div className="task-tags">
                           {task.tags.map(tag => (
@@ -84,6 +125,39 @@ function TaskList({ tasks, onTaskUpdate }: TaskListProps) {
                               </button>
                           )}
                       </div>
+                      <button 
+                          className="reminder-btn"
+                          onClick={() => setShowReminderPicker(task.id)}
+                          title="Set reminder"
+                      >
+                          🔔
+                      </button>
+                      {showReminderPicker === task.id && (
+                        <div className="reminder-picker-container" ref={pickerRef}>
+                            <DatePicker
+                                selected={newReminderDate || (task.reminderDate ? new Date(task.reminderDate) : null)}
+                                onChange={handleDateTimeChange}
+                                showTimeSelect
+                                dateFormat="Pp"
+                                minDate={new Date()}
+                                inline
+                            />
+                            <div className="reminder-actions">
+                                <button 
+                                    className="confirm-btn"
+                                    onClick={() => handleSetReminder(task.id, newReminderDate)}
+                                >
+                                    Set Reminder
+                                </button>
+                                <button 
+                                    className="cancel-btn"
+                                    onClick={() => setShowReminderPicker(null)}
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    )}
                   </div>
               </li>
           ))}

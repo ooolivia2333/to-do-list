@@ -51,6 +51,22 @@ const taskService = {
             throw new Error("Failed to update task completion");
         }
     },
+
+    setReminder: async (taskId: string, reminderDate: Date | null) => {
+        const response = await fetch(`http://localhost:30000/api/tasks/${taskId}/reminder`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ reminderDate: reminderDate?.toISOString() || null }),
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to set reminder");
+        }
+
+        return response.json();
+    },
 };
 
 export default taskService;

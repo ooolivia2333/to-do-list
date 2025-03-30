@@ -47,6 +47,22 @@ const TaskController = {
             console.error("Error updating task completion:", error);
             res.status(500).json({error: error.message});
         }
+    },
+    setReminder: async (req, res) => {
+        try {
+            const taskId = parseInt(req.params.taskId);
+            const {reminderDate} = req.body;
+            
+            if (isNaN(taskId)) {
+                return res.status(400).json({error: "Invalid task ID"});
+            }
+
+            const result = await TaskModel.setReminder(taskId, reminderDate);
+            res.json(result);
+        } catch (error) {
+            console.error("Error setting reminder:", error);
+            res.status(500).json({error: error.message});
+        }
     }
 };
 
