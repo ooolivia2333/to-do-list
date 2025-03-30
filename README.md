@@ -2,6 +2,8 @@
 
 A simple todo list application built with React (frontend) and Express/SQLite (backend).
 
+![Demo picture](/sample.png)
+
 ## Getting Started
 
 ### Prerequisites
