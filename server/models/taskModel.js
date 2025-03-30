@@ -223,6 +223,48 @@ const TaskModel = {
             });
         });
     },
+    deleteTask: (taskId) => {
+        return new Promise((resolve, reject) => {
+            db.serialize(() => {
+                db.run("BEGIN TRANSACTION");
+
+                db.run("DELETE FROM task_tags WHERE task_id = ?", [taskId], (err) => {
+                    if (err) {
+                        db.run("ROLLBACK");
+                        reject(err);
+                        return;
+                    }
+
+                    db.run("DELETE FROM tasks WHERE id = ?", [taskId], (err) => {
+                        if (err) {
+                            db.run("ROLLBACK");
+                            reject(err);
+                            return;
+                        }
+
+                        db.run(`
+                            DELETE FROM tags
+                            WHERE id NOT IN (
+                                SELECT DISTINCT tag_id
+                                FROM task_tags
+                            )
+                        `, [], (err) => {
+                            if (err) {
+                                db.run("ROLLBACK");
+                                reject(err);
+                                return;
+                            }
+
+                            db.run("COMMIT");
+                            resolve();
+                        })
+                        
+                        
+                    })
+                })
+            })
+        })
+    }
 };
 
 module.exports = TaskModel;

@@ -7,4 +7,6 @@ router.post("/", TaskController.createTask);
 router.post("/:taskId/tags", TaskController.addTagsToTask);
 router.patch("/:taskId", TaskController.updateTaskCompletion);
 router.patch("/:taskId/reminder", TaskController.setReminder);
+router.delete("/:taskId", TaskController.deleteTask);
+
 module.exports = router;

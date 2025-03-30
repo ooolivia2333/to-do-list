@@ -63,6 +63,20 @@ const TaskController = {
             console.error("Error setting reminder:", error);
             res.status(500).json({error: error.message});
         }
+    },
+    deleteTask: async (req, res) => {
+        try {
+            const taskId = parseInt(req.params.taskId);
+            if (isNaN(taskId)) {
+                return res.status(400).json({error: "Invalid task ID"});
+            }
+
+            await TaskModel.deleteTask(taskId);
+            res.json({message: "Task deleted successfully"});
+        } catch (error) {
+            console.error("Error deleting task:", error);
+            res.status(500).json({error: error.message});
+        }
     }
 };
 

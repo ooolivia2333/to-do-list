@@ -19,12 +19,6 @@ function TaskList({ tasks, onTaskUpdate }: TaskListProps) {
     const handleDateTimeChange = (date: Date | null) => {
         if (!date) return;
         
-        // If we already have a date selected, preserve the old time
-        if (newReminderDate) {
-            date.setHours(newReminderDate.getHours());
-            date.setMinutes(newReminderDate.getMinutes());
-        }
-        
         setNewReminderDate(date);
     };
     
@@ -54,6 +48,15 @@ function TaskList({ tasks, onTaskUpdate }: TaskListProps) {
             onTaskUpdate();
         } catch (error) {
             console.error("Error setting reminder:", error);
+        }
+    };
+
+    const handleDelete = async (taskId: number) => {
+        try {
+            await taskService.deleteTask(taskId.toString());
+            onTaskUpdate();
+        } catch (error) {
+            console.error("Error deleting task:", error);
         }
     };
 
@@ -92,72 +95,75 @@ function TaskList({ tasks, onTaskUpdate }: TaskListProps) {
                           )}
                       </div>
                       <div className="task-tags">
-                          {task.tags.map(tag => (
-                              <span key={tag} className="tag">{tag}</span>
-                          ))}
-                          {editingTaskId === task.id ? (
-                              <form onSubmit={(e) => {
-                                  e.preventDefault();
-                                  handleAddTag(task.id);
-                              }}>
-                                  <input
-                                      type="text"
-                                      value={newTag}
-                                      onChange={(e) => setNewTag(e.target.value)}
-                                      onBlur={() => {
-                                        // Small delay to allow form submission if clicked
-                                        setTimeout(() => {
-                                            setEditingTaskId(null);
-                                            setNewTag("");
-                                        }, 100);
-                                      }}
-                                      placeholder="Add tag"
-                                      className="tag-input"
-                                      autoFocus
-                                  />
-                              </form>
-                          ) : (
-                              <button 
-                                  className="add-tag-btn"
-                                  onClick={() => setEditingTaskId(task.id)}
-                              >
-                                  +
-                              </button>
-                          )}
-                      </div>
-                      <button 
-                          className="reminder-btn"
-                          onClick={() => setShowReminderPicker(task.id)}
-                          title="Set reminder"
-                      >
-                          🔔
-                      </button>
-                      {showReminderPicker === task.id && (
-                        <div className="reminder-picker-container" ref={pickerRef}>
-                            <DatePicker
-                                selected={newReminderDate || (task.reminderDate ? new Date(task.reminderDate) : null)}
-                                onChange={handleDateTimeChange}
-                                showTimeSelect
-                                dateFormat="Pp"
-                                minDate={new Date()}
-                                inline
-                            />
-                            <div className="reminder-actions">
+                            {task.tags.map(tag => (
+                                <span key={tag} className="tag">{tag}</span>
+                            ))}
+                            {editingTaskId === task.id ? ( // If we are editing the task, show the form
+                                <form onSubmit={(e) => {
+                                    e.preventDefault(); // Prevent the default browser submit
+                                    handleAddTag(task.id);
+                                }}>
+                                    <input
+                                        type="text"
+                                        value={newTag}
+                                        onChange={(e) => setNewTag(e.target.value)}
+                                        onBlur={() => {
+                                            // Small delay to allow form submission if clicked
+                                            setTimeout(() => {
+                                                setEditingTaskId(null);
+                                                setNewTag("");
+                                            }, 100);
+                                        }}
+                                        placeholder="Add tag"
+                                        className="tag-input"
+                                        autoFocus
+                                    />
+                                </form>
+                            ) : (
                                 <button 
-                                    className="confirm-btn"
-                                    onClick={() => handleSetReminder(task.id, newReminderDate)}
+                                    className="add-tag-btn"
+                                    onClick={() => setEditingTaskId(task.id)}
                                 >
-                                    Set Reminder
+                                    +
                                 </button>
-                                <button 
-                                    className="cancel-btn"
-                                    onClick={() => setShowReminderPicker(null)}
-                                >
-                                    Cancel
-                                </button>
-                            </div>
+                            )}
                         </div>
-                    )}
+                        <button 
+                            className="reminder-btn"
+                            onClick={() => setShowReminderPicker(task.id)}
+                            title="Set reminder"
+                        >
+                            🔔
+                        </button>
+                        {showReminderPicker === task.id && (
+                            <div className="reminder-picker-container" ref={pickerRef}>
+                                <DatePicker
+                                    selected={newReminderDate || (task.reminderDate ? new Date(task.reminderDate) : null)}
+                                    onChange={handleDateTimeChange}
+                                    showTimeSelect
+                                    dateFormat="Pp"
+                                    minDate={new Date()}
+                                    inline
+                                />
+                                <div className="reminder-actions">
+                                    <button 
+                                        className="confirm-btn"
+                                        onClick={() => handleSetReminder(task.id, newReminderDate)}
+                                    >
+                                        Set Reminder
+                                    </button>
+                                    <button 
+                                        className="cancel-btn"
+                                        onClick={() => setShowReminderPicker(null)}
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                        <button className="delete-btn" onClick={() => handleDelete(task.id)}>
+                            🗑️
+                        </button>
                   </div>
               </li>
           ))}

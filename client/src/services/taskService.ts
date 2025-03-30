@@ -67,6 +67,19 @@ const taskService = {
 
         return response.json();
     },
+
+    deleteTask: async (taskId: string) => {
+        const response = await fetch(`http://localhost:30000/api/tasks/${taskId}`, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to delete task");
+        }
+    },
 };
 
 export default taskService;
